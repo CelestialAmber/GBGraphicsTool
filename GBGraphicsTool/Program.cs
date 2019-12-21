@@ -22,7 +22,7 @@ namespace GBGraphicsTool
             } else {
                 path = args[0];
                 string extension = path.Substring(path.LastIndexOf("."), path.Length - path.LastIndexOf("."));
-                Console.WriteLine(extension);
+                bitDepth = extension == "2bpp" ? 2 : extension == "1bpp" ? 1 : 2;
                 if (args.Length > 1)
                 {
                     for(int i = 1; i < args.Length; i++)
@@ -38,10 +38,6 @@ namespace GBGraphicsTool
                     }
 
 
-                }
-                else
-                {
-                    bitDepth = extension == "2bpp" ? 2 : extension == "1bpp" ? 1 : 2;
                 }
                 byte[] imageData = File.ReadAllBytes(path);
                 int height = 8 * (int)MathF.Ceiling((float)(imageData.Length) / (float)(width/8 * 8 * bitDepth));
@@ -67,14 +63,14 @@ namespace GBGraphicsTool
                                 {
                                     if (bitDepth == 2)
                                     {
-                                        highBit = (imageData[i + 2*y] >> (7 - x))&0x01;
-                                        lowBit = (imageData[i + 2*y + 1] >> (7 - x))&0x01;
+                                        highBit = (imageData[i + 2*y + 1] >> (7 - x))&0x01;
+                                        lowBit = (imageData[i + 2*y] >> (7 - x))&0x01;
                                         int value = 3 - ((highBit << 1) | lowBit);
                                         colorVal = (int)(255f * ((float)value / 3f));
                                     }
                                     else
                                     {                               
-                                        int value = (imageData[i + y] >> (7 - x)) & 0x01;
+                                        int value = 1 - ((imageData[i + y] >> (7 - x)) & 0x01);
                                         colorVal = value * 255;
                                     }
                                     Color color = Color.FromArgb(colorVal, colorVal, colorVal);
