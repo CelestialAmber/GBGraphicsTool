@@ -22,7 +22,7 @@ namespace GBGraphicsTool
             } else {
                 path = args[0];
                 string extension = path.Substring(path.LastIndexOf("."), path.Length - path.LastIndexOf("."));
-                bitDepth = extension == "2bpp" ? 2 : extension == "1bpp" ? 1 : 2;
+                bitDepth = extension == ".2bpp" ? 2 : extension == ".1bpp" ? 1 : 2;
                 if (args.Length > 1)
                 {
                     for(int i = 1; i < args.Length; i++)
@@ -65,8 +65,8 @@ namespace GBGraphicsTool
                                     {
                                         highBit = (imageData[i + 2*y + 1] >> (7 - x))&0x01;
                                         lowBit = (imageData[i + 2*y] >> (7 - x))&0x01;
-                                        int value = 3 - ((highBit << 1) | lowBit);
-                                        colorVal = (int)(255f * ((float)value / 3f));
+                                        int value = (highBit << 1) | lowBit;
+                                        colorVal = (int)(255f * ((float)(3-value) / 3f));
                                     }
                                     else
                                     {                               
