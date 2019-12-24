@@ -1,15 +1,16 @@
 ﻿using System;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
+using System.Text;
+using System.Drawing;
+using System.IO;
 
 namespace GBGraphicsTool
 {
     class Program
     {
         public static int rangeStartOffset, rangeLength;
+
         static void Main(string[] args)
         {
             int width = 128, bitDepth = 0;
@@ -18,7 +19,8 @@ namespace GBGraphicsTool
             bool useFileRange = false;
             string outputFilename = "";
 
-            if (args.Length == 0) {
+            if (args.Length == 0)
+            {
                 Console.WriteLine("Usage: GBGraphicsTool <image path> -b -w -r -o");
                 Console.WriteLine("Optional arguments:");
                 Console.WriteLine("-b: bits per pixel(1 or 2)(e.g. -b2)");
@@ -27,7 +29,9 @@ namespace GBGraphicsTool
                 Console.WriteLine("-o: Output file name (e.g. -o font.png)");
                 return;
 
-            } else {
+            }
+            else
+            {
                 path = args[0];
                 string extension = Path.GetExtension(path);
                 string filename = Path.GetFileNameWithoutExtension(path);
@@ -63,17 +67,17 @@ namespace GBGraphicsTool
                             }
                         }
                     }
-                    catch(IndexOutOfRangeException e)
+                    catch (IndexOutOfRangeException e)
                     {
                         throw new Exception("Invalid syntax");
                     }
-                   
-                byte[] imageData = File.ReadAllBytes(path);
+
+                    byte[] imageData = File.ReadAllBytes(path);
                     if (useFileRange)
                     {
                         imageData = imageData.Skip(rangeStartOffset).Take(rangeLength).ToArray();
                     }
-                    int height = 8 * (int)MathF.Ceiling((float)(imageData.Length) / (float)(width / 8 * 8 * bitDepth));
+                    int height = 8 * (int)Math.Ceiling((float)(imageData.Length) / (float)(width / 8 * 8 * bitDepth));
                     image = new Bitmap(width, height);
                     for (int x = 0; x < width; x++)
                     {
@@ -87,30 +91,27 @@ namespace GBGraphicsTool
                     int yPos = 0;
                     for (int i = 0; i < width * height; i += 8 * bitDepth)
                     {
-                        if ((i < imageData.Length && bitDepth == 1) || ((i + 1 < imageData.Length) && bitDepth == 2))
-                        {
                             int highBit = 0, lowBit = 0, colorVal = 0;
                             for (int x = 0; x < 8; x++)
                             {
                                 for (int y = 0; y < 8; y++)
                                 {
-                                    if (bitDepth == 2)
-                                    {
-                                        highBit = (imageData[i + 2 * y + 1] >> (7 - x)) & 0x01;
-                                        lowBit = (imageData[i + 2 * y] >> (7 - x)) & 0x01;
-                                        int value = (highBit << 1) | lowBit;
-                                        colorVal = (int)(255f * ((float)(3 - value) / 3f));
-                                    }
-                                    else
-                                    {
-                                        int value = 1 - ((imageData[i + y] >> (7 - x)) & 0x01);
-                                        colorVal = value * 255;
-                                    }
-                                    Color color = Color.FromArgb(colorVal, colorVal, colorVal);
-                                    image.SetPixel(x + (xPos * 8), y + (yPos * 8), color);
-
+                                if ((i + y >= imageData.Length && bitDepth == 1) || ((i + 2 * y + 1 >= imageData.Length) && bitDepth == 2)) break;
+                                        if (bitDepth == 2)
+                                        {
+                                            highBit = (imageData[i + 2 * y + 1] >> (7 - x)) & 0x01;
+                                            lowBit = (imageData[i + 2 * y] >> (7 - x)) & 0x01;
+                                            int value = (highBit << 1) | lowBit;
+                                            colorVal = (int)(255f * ((float)(3 - value) / 3f));
+                                        }
+                                        else
+                                        {
+                                            int value = ((imageData[i + y] >> (7 - x)) & 0x01);
+                                            colorVal = (1-value) * 255;
+                                        }
+                                        Color color = Color.FromArgb(colorVal, colorVal, colorVal);
+                                        image.SetPixel(x + (xPos * 8), y + (yPos * 8), color);
                                 }
-
                             }
                             xPos++;
                             if (xPos >= (width / 8))
@@ -118,14 +119,14 @@ namespace GBGraphicsTool
                                 xPos = 0;
                                 yPos++;
                             }
-                        }
                     }
                     string outputFilePath = path.Replace(extension, ".png");
                     if (outputFilename != "")
                     {
                         try
                         {
-                            outputFilePath = Path.GetDirectoryName(outputFilePath) + "/" + outputFilename;
+                            string inputDir = Path.GetDirectoryName(outputFilePath);
+                            outputFilePath = inputDir + (inputDir == "" ? "" : "/") + outputFilename;
                         }
                         catch (Exception e)
                         {
@@ -137,4 +138,5 @@ namespace GBGraphicsTool
             }
         }
     }
+
 }
